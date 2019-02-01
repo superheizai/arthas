@@ -17,7 +17,7 @@ import com.taobao.middleware.logger.Logger;
 class WatchAdviceListener extends ReflectAdviceListenerAdapter {
 
     private static final Logger logger = LogUtil.getArthasLogger();
-    private final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
+    //    private final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
     private WatchCommand command;
     private CommandProcess process;
 
@@ -34,7 +34,7 @@ class WatchAdviceListener extends ReflectAdviceListenerAdapter {
     public void before(ClassLoader loader, Class<?> clazz, ArthasMethod method, Object target, Object[] args)
             throws Throwable {
         // 开始计算本次方法调用耗时
-        threadLocalWatch.start();
+        ThreadLocalWatch.start();
         if (command.isBefore()) {
             watching(Advice.newForBefore(loader, clazz, method, target, args));
         }
@@ -76,7 +76,7 @@ class WatchAdviceListener extends ReflectAdviceListenerAdapter {
     private void watching(Advice advice) {
         try {
             // 本次调用的耗时
-            double cost = threadLocalWatch.costInMillis();
+            double cost = ThreadLocalWatch.costInMillis();
             if (isConditionMet(command.getConditionExpress(), advice, cost)) {
                 // TODO: concurrency issues for process.write
                 Object value = getExpressionResult(command.getExpress(), advice, cost);
@@ -91,9 +91,11 @@ class WatchAdviceListener extends ReflectAdviceListenerAdapter {
         } catch (Exception e) {
             logger.warn("watch failed.", e);
             process.write("watch failed, condition is: " + command.getConditionExpress() + ", express is: "
-                          + command.getExpress() + ", " + e.getMessage() + ", visit " + LogUtil.LOGGER_FILE
-                          + " for more details.\n");
+                    + command.getExpress() + ", " + e.getMessage() + ", visit " + LogUtil.LOGGER_FILE
+                    + " for more details.\n");
             process.end();
+        } finally {
+            ThreadLocalWatch.clear();
         }
     }
 }

@@ -1,9 +1,9 @@
 package com.taobao.arthas.core.command.monitor200;
 
-import com.taobao.arthas.core.advisor.ReflectAdviceListenerAdapter;
-import com.taobao.arthas.core.shell.command.CommandProcess;
 import com.taobao.arthas.core.advisor.Advice;
 import com.taobao.arthas.core.advisor.ArthasMethod;
+import com.taobao.arthas.core.advisor.ReflectAdviceListenerAdapter;
+import com.taobao.arthas.core.shell.command.CommandProcess;
 import com.taobao.arthas.core.util.DateUtils;
 import com.taobao.arthas.core.util.LogUtil;
 import com.taobao.arthas.core.util.ThreadLocalWatch;
@@ -17,7 +17,7 @@ public class StackAdviceListener extends ReflectAdviceListenerAdapter {
     private static final Logger logger = LogUtil.getArthasLogger();
 
     private final ThreadLocal<String> stackThreadLocal = new ThreadLocal<String>();
-    private final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
+    //    private final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
     private StackCommand command;
     private CommandProcess process;
 
@@ -31,7 +31,7 @@ public class StackAdviceListener extends ReflectAdviceListenerAdapter {
             throws Throwable {
         stackThreadLocal.set(ThreadUtil.getThreadStack(Thread.currentThread()));
         // 开始计算本次方法调用耗时
-        threadLocalWatch.start();
+        ThreadLocalWatch.start();
     }
 
     @Override
@@ -51,7 +51,7 @@ public class StackAdviceListener extends ReflectAdviceListenerAdapter {
     private void finishing(Advice advice) {
         // 本次调用的耗时
         try {
-            double cost = threadLocalWatch.costInMillis();
+            double cost = ThreadLocalWatch.costInMillis();
             if (isConditionMet(command.getConditionExpress(), advice, cost)) {
                 // TODO: concurrency issues for process.write
                 process.write("ts=" + DateUtils.getCurrentDate() + ";" + stackThreadLocal.get() + "\n");
@@ -63,8 +63,10 @@ public class StackAdviceListener extends ReflectAdviceListenerAdapter {
         } catch (Exception e) {
             logger.warn("stack failed.", e);
             process.write("stack failed, condition is: " + command.getConditionExpress() + ", " + e.getMessage()
-                          + ", visit " + LogUtil.LOGGER_FILE + " for more details.\n");
+                    + ", visit " + LogUtil.LOGGER_FILE + " for more details.\n");
             process.end();
+        } finally {
+            ThreadLocalWatch.clear();
         }
     }
 }

@@ -1,10 +1,10 @@
 package com.taobao.arthas.core.command.monitor200;
 
+import com.taobao.arthas.core.advisor.Advice;
+import com.taobao.arthas.core.advisor.ArthasMethod;
 import com.taobao.arthas.core.advisor.ReflectAdviceListenerAdapter;
 import com.taobao.arthas.core.command.express.ExpressException;
 import com.taobao.arthas.core.shell.command.CommandProcess;
-import com.taobao.arthas.core.advisor.Advice;
-import com.taobao.arthas.core.advisor.ArthasMethod;
 import com.taobao.arthas.core.util.LogUtil;
 import com.taobao.arthas.core.util.ThreadLocalWatch;
 import com.taobao.text.ui.TableElement;
@@ -12,9 +12,7 @@ import com.taobao.text.util.RenderUtil;
 
 import java.util.Date;
 
-import static com.taobao.arthas.core.command.monitor200.TimeTunnelTable.createTable;
-import static com.taobao.arthas.core.command.monitor200.TimeTunnelTable.fillTableHeader;
-import static com.taobao.arthas.core.command.monitor200.TimeTunnelTable.fillTableRow;
+import static com.taobao.arthas.core.command.monitor200.TimeTunnelTable.*;
 
 /**
  * @author beiwei30 on 30/11/2016.
@@ -28,7 +26,7 @@ public class TimeTunnelAdviceListener extends ReflectAdviceListenerAdapter {
     private volatile boolean isFirst = true;
 
     // 方法执行时间戳
-    private final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
+//    private final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
 
     public TimeTunnelAdviceListener(TimeTunnelCommand command, CommandProcess process) {
         this.command = command;
@@ -38,7 +36,7 @@ public class TimeTunnelAdviceListener extends ReflectAdviceListenerAdapter {
     @Override
     public void before(ClassLoader loader, Class<?> clazz, ArthasMethod method, Object target, Object[] args)
             throws Throwable {
-        threadLocalWatch.start();
+        ThreadLocalWatch.start();
     }
 
     @Override
@@ -54,11 +52,11 @@ public class TimeTunnelAdviceListener extends ReflectAdviceListenerAdapter {
     }
 
     private void afterFinishing(Advice advice) {
-        double cost = threadLocalWatch.costInMillis();
+        double cost = ThreadLocalWatch.costInMillis();
         TimeFragment timeTunnel = new TimeFragment(advice, new Date(), cost);
 
         // reset the timestamp
-        threadLocalWatch.clear();
+        ThreadLocalWatch.clear();
 
         boolean match = false;
         try {
@@ -66,7 +64,7 @@ public class TimeTunnelAdviceListener extends ReflectAdviceListenerAdapter {
         } catch (ExpressException e) {
             LogUtil.getArthasLogger().warn("tt failed.", e);
             process.write("tt failed, condition is: " + command.getConditionExpress() + ", " + e.getMessage()
-                          + ", visit " + LogUtil.LOGGER_FILE + " for more details.\n");
+                    + ", visit " + LogUtil.LOGGER_FILE + " for more details.\n");
             process.end();
         }
 

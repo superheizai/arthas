@@ -1,8 +1,8 @@
 package com.taobao.arthas.core.command.monitor200;
 
+import com.taobao.arthas.core.advisor.ArthasMethod;
 import com.taobao.arthas.core.advisor.ReflectAdviceListenerAdapter;
 import com.taobao.arthas.core.shell.command.CommandProcess;
-import com.taobao.arthas.core.advisor.ArthasMethod;
 import com.taobao.arthas.core.util.ThreadLocalWatch;
 import com.taobao.text.Decoration;
 import com.taobao.text.ui.TableElement;
@@ -71,7 +71,7 @@ class MonitorAdviceListener extends ReflectAdviceListenerAdapter {
     private Timer timer;
     // 监控数据
     private ConcurrentHashMap<Key, AtomicReference<Data>> monitorData = new ConcurrentHashMap<Key, AtomicReference<Data>>();
-    private final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
+    //    private final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
     private MonitorCommand command;
     private CommandProcess process;
 
@@ -100,7 +100,7 @@ class MonitorAdviceListener extends ReflectAdviceListenerAdapter {
     @Override
     public void before(ClassLoader loader, Class<?> clazz, ArthasMethod method, Object target, Object[] args)
             throws Throwable {
-        threadLocalWatch.start();
+        ThreadLocalWatch.start();
     }
 
     @Override
@@ -116,7 +116,7 @@ class MonitorAdviceListener extends ReflectAdviceListenerAdapter {
     }
 
     private void finishing(Class<?> clazz, ArthasMethod method, boolean isThrowing) {
-        double cost = threadLocalWatch.costInMillis();
+        double cost = ThreadLocalWatch.costInMillis();
         final Key key = new Key(clazz.getName(), method.getName());
 
         while (true) {
@@ -144,6 +144,7 @@ class MonitorAdviceListener extends ReflectAdviceListenerAdapter {
             }
             break;
         }
+        ThreadLocalWatch.clear();
     }
 
     private class MonitorTimer extends TimerTask {

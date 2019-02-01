@@ -12,7 +12,7 @@ import com.taobao.arthas.core.util.ThreadLocalWatch;
  */
 public class AbstractTraceAdviceListener extends ReflectAdviceListenerAdapter {
 
-    protected final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
+    //    protected final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
     protected TraceCommand command;
     protected CommandProcess process;
 
@@ -43,7 +43,7 @@ public class AbstractTraceAdviceListener extends ReflectAdviceListenerAdapter {
         threadBoundEntity.get().view.begin(clazz.getName() + ":" + method.getName() + "()");
         threadBoundEntity.get().deep++;
         // 开始计算本次方法调用耗时
-        threadLocalWatch.start();
+        ThreadLocalWatch.start();
     }
 
     @Override
@@ -68,7 +68,7 @@ public class AbstractTraceAdviceListener extends ReflectAdviceListenerAdapter {
 
     private void finishing(Advice advice) {
         // 本次调用的耗时
-        double cost = threadLocalWatch.costInMillis();
+        double cost = ThreadLocalWatch.costInMillis();
         if (--threadBoundEntity.get().deep == 0) {
             try {
                 if (isConditionMet(command.getConditionExpress(), advice, cost)) {
@@ -85,10 +85,11 @@ public class AbstractTraceAdviceListener extends ReflectAdviceListenerAdapter {
             } catch (Throwable e) {
                 LogUtil.getArthasLogger().warn("trace failed.", e);
                 process.write("trace failed, condition is: " + command.getConditionExpress() + ", " + e.getMessage()
-                              + ", visit " + LogUtil.LOGGER_FILE + " for more details.\n");
+                        + ", visit " + LogUtil.LOGGER_FILE + " for more details.\n");
                 process.end();
             } finally {
                 threadBoundEntity.remove();
+                ThreadLocalWatch.clear();
             }
         }
     }

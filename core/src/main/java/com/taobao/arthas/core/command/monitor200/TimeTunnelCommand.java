@@ -1,25 +1,22 @@
 package com.taobao.arthas.core.command.monitor200;
 
+import com.taobao.arthas.core.advisor.Advice;
 import com.taobao.arthas.core.advisor.AdviceListener;
+import com.taobao.arthas.core.advisor.ArthasMethod;
 import com.taobao.arthas.core.command.Constants;
 import com.taobao.arthas.core.command.express.ExpressException;
 import com.taobao.arthas.core.command.express.ExpressFactory;
 import com.taobao.arthas.core.shell.cli.Completion;
 import com.taobao.arthas.core.shell.command.CommandProcess;
-import com.taobao.arthas.core.advisor.Advice;
-import com.taobao.arthas.core.advisor.ArthasMethod;
 import com.taobao.arthas.core.shell.handlers.command.CommandInterruptHandler;
 import com.taobao.arthas.core.util.LogUtil;
 import com.taobao.arthas.core.util.SearchUtils;
 import com.taobao.arthas.core.util.StringUtils;
+import com.taobao.arthas.core.util.ThreadLocalWatch;
 import com.taobao.arthas.core.util.affect.RowAffect;
 import com.taobao.arthas.core.util.matcher.Matcher;
 import com.taobao.arthas.core.view.ObjectView;
-import com.taobao.middleware.cli.annotations.Argument;
-import com.taobao.middleware.cli.annotations.Description;
-import com.taobao.middleware.cli.annotations.Name;
-import com.taobao.middleware.cli.annotations.Option;
-import com.taobao.middleware.cli.annotations.Summary;
+import com.taobao.middleware.cli.annotations.*;
 import com.taobao.text.ui.TableElement;
 import com.taobao.text.util.RenderUtil;
 
@@ -75,6 +72,8 @@ public class TimeTunnelCommand extends EnhancerCommand {
     private boolean isDelete = false;
     private boolean isRegEx = false;
     private int numberOfLimit = 100;
+
+//    private final ThreadLocalWatch threadLocalWatch = new ThreadLocalWatch();
 
     @Argument(index = 0, argName = "class-pattern", required = false)
     @Description("Path and classname of Pattern Matching")
@@ -438,21 +437,26 @@ public class TimeTunnelCommand extends EnhancerCommand {
 
             ArthasMethod method = advice.getMethod();
             boolean accessible = advice.getMethod().isAccessible();
-            try {
-                method.setAccessible(true);
-                Object returnObj = method.invoke(advice.getTarget(), advice.getParams());
-                TimeTunnelTable.drawPlayResult(table, returnObj, isNeedExpand(), expand, sizeLimit);
-            } catch (Throwable t) {
-                TimeTunnelTable.drawPlayException(table, t, isNeedExpand(), expand);
-            } finally {
-                method.setAccessible(accessible);
+            method.setAccessible(true);
+            for (int i = 0; i < getNumberOfLimit(); i++) {
+                try {
+                    ThreadLocalWatch.start();
+                    Object returnObj = method.invoke(advice.getTarget(), advice.getParams());
+                    TimeTunnelTable.drawPlayResult(table, returnObj, isNeedExpand(), expand, sizeLimit);
+                } catch (Throwable t) {
+                    TimeTunnelTable.drawPlayException(table, t, isNeedExpand(), expand);
+                } finally {
+                    ThreadLocalWatch.clear();
+                }
+                process.write(RenderUtil.render(table, process.width()))
+                        .write(format("Time fragment[%d] successfully replayed.", index))
+                        .write("\n");
+                affect.rCnt(1);
+                process.write(affect.toString()).write("\n");
             }
+            method.setAccessible(accessible);
 
-            process.write(RenderUtil.render(table, process.width()))
-                    .write(format("Time fragment[%d] successfully replayed.", index))
-                    .write("\n");
-            affect.rCnt(1);
-            process.write(affect.toString()).write("\n");
+
         } finally {
             process.end();
         }

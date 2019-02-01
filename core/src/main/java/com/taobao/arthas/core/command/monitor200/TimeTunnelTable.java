@@ -1,9 +1,10 @@
 package com.taobao.arthas.core.command.monitor200;
 
-import com.taobao.arthas.core.command.express.ExpressException;
 import com.taobao.arthas.core.advisor.Advice;
+import com.taobao.arthas.core.command.express.ExpressException;
 import com.taobao.arthas.core.command.express.ExpressFactory;
 import com.taobao.arthas.core.util.StringUtils;
+import com.taobao.arthas.core.util.ThreadLocalWatch;
 import com.taobao.arthas.core.view.ObjectView;
 import com.taobao.text.Decoration;
 import com.taobao.text.ui.Element;
@@ -183,6 +184,7 @@ public class TimeTunnelTable {
         // 执行成功:输出成功状态
         table.row("IS-RETURN", "" + true);
         table.row("IS-EXCEPTION", "" + false);
+        table.row("COST", ThreadLocalWatch.costInMillis() + "");
 
         // 执行成功:输出成功结果
         if (isNeedExpand) {
@@ -196,7 +198,7 @@ public class TimeTunnelTable {
         // 执行失败:输出失败状态
         table.row("IS-RETURN", "" + false);
         table.row("IS-EXCEPTION", "" + true);
-
+        table.row("COST", ThreadLocalWatch.costInMillis() + "");
         // 执行失败:输出失败异常信息
         Throwable cause;
         if (t instanceof InvocationTargetException) {
