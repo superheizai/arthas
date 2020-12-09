@@ -3,6 +3,7 @@ package com.taobao.arthas.core.shell.term.impl.http.api;
 import com.alibaba.arthas.deps.org.slf4j.Logger;
 import com.alibaba.arthas.deps.org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.taobao.arthas.common.PidUtils;
 import com.taobao.arthas.core.command.model.*;
 import com.taobao.arthas.core.distribution.PackingResultDistributor;
@@ -171,7 +172,7 @@ public class HttpApiHandler {
     private void writeResult(DefaultFullHttpResponse response, Object result) throws IOException {
         ByteBufOutputStream out = new ByteBufOutputStream(response.content());
         try {
-            JSON.writeJSONString(out, result);
+            JSON.writeJSONString(out, result,SerializerFeature.DisableCircularReferenceDetect);
         } catch (IOException e) {
             logger.error("write json to response failed", e);
             throw e;

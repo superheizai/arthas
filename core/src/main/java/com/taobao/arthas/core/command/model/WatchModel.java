@@ -9,58 +9,78 @@ import java.util.Date;
  */
 public class WatchModel extends ResultModel {
 
-    private Date ts;
-    private double cost;
-    private Object value;
+	private Date ts;
+	private double cost;
+	private Object value;
 
-    private Integer expand;
-    private Integer sizeLimit;
+	private Integer expand;
+	private Integer sizeLimit;
 
-    public WatchModel() {
-    }
+	private String method;
 
-    @Override
-    public String getType() {
-        return "watch";
-    }
+	private String className;
 
-    public Date getTs() {
-        return ts;
-    }
+	public WatchModel() {
+	}
 
-    public void setTs(Date ts) {
-        this.ts = ts;
-    }
+	@Override
+	public String getType() {
+		return "watch";
+	}
 
-    public double getCost() {
-        return cost;
-    }
+	public Date getTs() {
+		return ts;
+	}
 
-    public Object getValue() {
-        return value;
-    }
+	public void setTs(Date ts) {
+		this.ts = ts;
+	}
 
-    public void setCost(double cost) {
-        this.cost = cost;
-    }
+	public double getCost() {
+		return cost;
+	}
 
-    public void setValue(Object value) {
-        this.value = value;
-    }
+	public Object getValue() {
+		return value;
+	}
 
-    public void setExpand(Integer expand) {
-        this.expand = expand;
-    }
+	public void setCost(double cost) {
+		this.cost = cost;
+	}
 
-    public void setSizeLimit(Integer sizeLimit) {
-        this.sizeLimit = sizeLimit;
-    }
+	public void setValue(Object value) {
+		this.value = value;
+	}
 
-    public Integer getExpand() {
-        return expand;
-    }
+	public void setExpand(Integer expand) {
+		this.expand = expand;
+	}
 
-    public Integer getSizeLimit() {
-        return sizeLimit;
-    }
+	public void setSizeLimit(Integer sizeLimit) {
+		this.sizeLimit = sizeLimit;
+	}
+
+	public Integer getExpand() {
+		return expand;
+	}
+
+	public Integer getSizeLimit() {
+		return sizeLimit;
+	}
+
+	public String getMethod() {
+			return method;
+		}
+
+		public void setMethod(String method) {
+			this.method = method;
+		}
+
+		public String getClassName() {
+			return className;
+		}
+
+		public void setClassName(String className) {
+			this.className = className;
+		}
 }
