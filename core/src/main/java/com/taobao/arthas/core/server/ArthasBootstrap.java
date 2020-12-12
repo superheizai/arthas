@@ -142,8 +142,8 @@ public class ArthasBootstrap {
         // 6. start agent server
         bind(configure);
 
-        // 7. init property
-        initProperties();
+        //  disable  fastjson circular reference option
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
 
         executorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
             @Override
@@ -166,10 +166,6 @@ public class ArthasBootstrap {
         Runtime.getRuntime().addShutdownHook(shutdown);
     }
 
-    private void initProperties() {
-//  disable  fastjson circular reference option
-        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
-    }
 
     private void initBeans() {
         this.resultViewResolver = new ResultViewResolver();
